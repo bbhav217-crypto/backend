@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    APP_ID = "FjZ9qAY6UPwc38iiJ25wC" 
+    APP_ID = "FjZ9qAY6UPwc38iiJ25wC"
   }
 
   parameters {
@@ -54,31 +54,31 @@ pipeline {
         sh '.venv/bin/python check.py'
       }
     }
-  }  
+  }
 
   post {
     success {
-      steps {
-        echo "✅ Tests passed, triggering deployment API..."
-        withCredentials([
-          string(credentialsId: params.DEPLOY_URL_CRED_ID, variable: 'DEPLOY_URL'),
-          string(credentialsId: params.DEPLOY_KEY_CRED_ID, variable: 'DEPLOY_KEY')
-        ]) {
-          sh '''
-            json_payload=$(printf '{"applicationId":"%s"}' "$APP_ID")
-            curl -fS -X POST \
-              "$DEPLOY_URL" \
-              -H 'accept: application/json' \
-              -H 'Content-Type: application/json' \
-              -H "x-api-key: $DEPLOY_KEY" \
-              --data-binary "$json_payload" \
-              -w "\nHTTP %{http_code}\n"
-          '''
-        }
-        // Send success email notification
-        mail to: 'bbhav217@gmail.com',
-             subject: "Jenkins Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-             body: """Hello,
+      echo "✅ Tests passed, triggering deployment API..."
+      withCredentials([
+        string(credentialsId: params.DEPLOY_URL_CRED_ID, variable: 'DEPLOY_URL'),
+        string(credentialsId: params.DEPLOY_KEY_CRED_ID, variable: 'DEPLOY_KEY')
+      ]) {
+        sh '''
+          json_payload=$(printf '{"applicationId":"%s"}' "$APP_ID")
+          curl -fS -X POST \
+            "$DEPLOY_URL" \
+            -H 'accept: application/json' \
+            -H 'Content-Type: application/json' \
+            -H "x-api-key: $DEPLOY_KEY" \
+            --data-binary "$json_payload" \
+            -w "\\nHTTP %{http_code}\\n"
+        '''
+      }
+
+      // Send success email notification
+      mail to: 'bbhav217@gmail.com',
+           subject: "Jenkins Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+           body: """Hello,
 
 The Jenkins pipeline for ${env.JOB_NAME} (build #${env.BUILD_NUMBER}) has succeeded.
 
@@ -91,15 +91,13 @@ Deployment API was triggered successfully.
 Regards,
 Jenkins
 """
-      }
     }
 
     failure {
-      steps {
-        echo "❌ Pipeline failed, sending error email..."
-        mail to: 'bbhav217gmail.com',
-             subject: "Jenkins Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-             body: """Hello,
+      echo "❌ Pipeline failed, sending error email..."
+      mail to: 'bbhav217@gmail.com',
+           subject: "Jenkins Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+           body: """Hello,
 
 The Jenkins pipeline for ${env.JOB_NAME} (build #${env.BUILD_NUMBER}) has failed.
 
@@ -112,7 +110,6 @@ Please check the console output for details.
 Regards,
 Jenkins
 """
-      }
     }
   }
 }
